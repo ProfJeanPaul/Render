@@ -9,6 +9,22 @@ app.use(express.json());
 // En una aplicación real, usarías una base de datos.
 let tareas = [];
 
+// NEW: Objeto para almacenar la configuración del control remoto de la extensión
+// En una aplicación real, esto también debería persistirse en una base de datos o archivo.
+let remoteControlSettings = {
+  onlineControl: true, // Por defecto, el control remoto está activo
+  remoteCheckHours: 0,
+  remoteCheckMinutes: 5,
+  remoteCheckSeconds: 0,
+  lowPowerMode: false,
+  idleDays: 0,
+  idleHours: 0,
+  idleMinutes: 30,
+  lowPowerCheckHours: 0,
+  lowPowerCheckMinutes: 1,
+  lowPowerCheckSeconds: 0
+};
+
 app.get("/", (req, res) => {
   res.send("Servidor activo desde Render 🚀");
 });
@@ -17,11 +33,11 @@ app.get("/", (req, res) => {
 app.post("/agregar", (req, res) => {
   const newTask = req.body;
   // Añadir la tarea solo si no existe ya para evitar duplicados en la lista del servidor
-  const existingTask = tareas.find(t => t.id === newTask.id);
-  if (existingTask) {
+  const existingTaskIndex = tareas.findIndex(t => t.id === newTask.id);
+  if (existingTaskIndex !== -1) {
     console.log(`[Server] Tarea con ID ${newTask.id} ya existe, actualizando.`);
     // Opcional: actualizar la tarea existente si se reenvía.
-    Object.assign(existingTask, newTask);
+    tareas[existingTaskIndex] = newTask;
   } else {
     tareas.push(newTask);
     console.log(`[Server] Tarea agregada: ID ${newTask.id}`);
@@ -36,7 +52,7 @@ app.get("/tareas", (req, res) => {
   res.send(tareas); // Enviar todas las tareas actuales
 });
 
-// NUEVO ENDPOINT: Para eliminar una tarea por su ID
+// ENDPOINT: Para eliminar una tarea por su ID
 app.post("/eliminar", (req, res) => {
   const taskIdToDelete = req.body.id;
   if (!taskIdToDelete) {
@@ -55,6 +71,22 @@ app.post("/eliminar", (req, res) => {
     res.status(404).send({ status: "not_found", message: `Tarea con ID ${taskIdToDelete} no encontrada.` });
   }
 });
+
+// NEW ENDPOINT: Para actualizar la configuración de control remoto
+app.post("/remote_settings/update", (req, res) => {
+  const updatedSettings = req.body;
+  // Fusiona las configuraciones recibidas con las existentes
+  Object.assign(remoteControlSettings, updatedSettings);
+  console.log("[Server] Configuración de control remoto actualizada:", remoteControlSettings);
+  res.send({ status: "ok", settings: remoteControlSettings });
+});
+
+// NEW ENDPOINT: Para obtener la configuración de control remoto
+app.get("/remote_settings", (req, res) => {
+  console.log("[Server] Solicitud de configuración de control remoto. Enviando:", remoteControlSettings);
+  res.send(remoteControlSettings);
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Servidor escuchando en el puerto", PORT));
