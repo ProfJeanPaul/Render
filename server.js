@@ -9,11 +9,10 @@ app.use(express.json());
 // En una aplicación real, usarías una base de datos.
 let tareas = [];
 
-// Objeto para almacenar la configuración del control remoto de la extensión
-// NEW: Añadir useRemoteConfigForExtension
+// NEW: Objeto para almacenar la configuración del control remoto de la extensión
+// En una aplicación real, esto también debería persistirse en una base de datos o archivo.
 let remoteControlSettings = {
   onlineControl: true, // Por defecto, el control remoto está activo
-  useRemoteConfigForExtension: false, // NEW: Por defecto, la extensión usará su configuración local
   remoteCheckHours: 0,
   remoteCheckMinutes: 5,
   remoteCheckSeconds: 0,
@@ -47,9 +46,10 @@ app.post("/agregar", (req, res) => {
 });
 
 // Endpoint para obtener todas las tareas activas
+// IMPORTANTE: NO limpiar el array 'tareas' aquí para permitir la persistencia.
 app.get("/tareas", (req, res) => {
   console.log(`[Server] Solicitud de tareas. Enviando ${tareas.length} tareas.`);
-  res.send(tareas);
+  res.send(tareas); // Enviar todas las tareas actuales
 });
 
 // ENDPOINT: Para eliminar una tarea por su ID
@@ -60,6 +60,7 @@ app.post("/eliminar", (req, res) => {
   }
 
   const initialLength = tareas.length;
+  // Filtrar el array para remover la tarea con el ID dado
   tareas = tareas.filter(task => task.id !== taskIdToDelete);
 
   if (tareas.length < initialLength) {
@@ -71,7 +72,7 @@ app.post("/eliminar", (req, res) => {
   }
 });
 
-// ENDPOINT: Para actualizar la configuración de control remoto
+// NEW ENDPOINT: Para actualizar la configuración de control remoto
 app.post("/remote_settings/update", (req, res) => {
   const updatedSettings = req.body;
   // Fusiona las configuraciones recibidas con las existentes
@@ -80,7 +81,7 @@ app.post("/remote_settings/update", (req, res) => {
   res.send({ status: "ok", settings: remoteControlSettings });
 });
 
-// ENDPOINT: Para obtener la configuración de control remoto
+// NEW ENDPOINT: Para obtener la configuración de control remoto
 app.get("/remote_settings", (req, res) => {
   console.log("[Server] Solicitud de configuración de control remoto. Enviando:", remoteControlSettings);
   res.send(remoteControlSettings);
@@ -89,3 +90,4 @@ app.get("/remote_settings", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Servidor escuchando en el puerto", PORT));
+
