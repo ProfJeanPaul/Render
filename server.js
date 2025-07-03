@@ -15,15 +15,15 @@ let remoteControlSettings = {
   onlineControl: true, // Por defecto, el control remoto está activo
   useRemoteConfigForExtension: false, // NEW: Por defecto, la extensión usará su configuración local
   remoteCheckHours: 0,
-  remoteCheckMinutes: 5,
-  remoteCheckSeconds: 0,
+  remoteCheckMinutes: 0,
+  remoteCheckSeconds: 5,
   lowPowerMode: false,
   idleDays: 0,
   idleHours: 0,
-  idleMinutes: 30,
+  idleMinutes: 10,
   lowPowerCheckHours: 0,
-  lowPowerCheckMinutes: 1,
-  lowPowerCheckSeconds: 0,
+  lowPowerCheckMinutes: 0,
+  lowPowerCheckSeconds: 7, //Este numero para saber que viene de aqui
   shutdownTriggeredByForm: false // NEW: Variable para indicar si el apagado fue iniciado desde el formulario
 };
 
